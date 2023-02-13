@@ -9,3 +9,11 @@ export async function createBooking(userId: number, roomId: number) {
     },
   });
 }
+
+export async function findBooking(id: number) {
+  return prisma.booking.findFirst({
+    where: {
+      id,
+    },
+  });
+}

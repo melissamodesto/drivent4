@@ -4,6 +4,16 @@ import ticketRepository from "@/repositories/ticket-repository";
 import { notFoundError, forbiddenError } from "@/errors";
 
 async function getBookings(userId: number) {
+  const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
+  if (!enrollment) {
+    throw notFoundError();
+  }
+
+  const ticket = await ticketRepository.findTicketByEnrollmentId(enrollment.id);
+  if (!ticket || ticket.status === "RESERVED" || ticket.TicketType.isRemote || !ticket.TicketType.includesHotel) {
+    throw forbiddenError();
+  }
+
   const booking = await bookingRepository.findBookingByUserId(userId);
 
   if (!booking) {
@@ -13,8 +23,6 @@ async function getBookings(userId: number) {
 }
 
 async function postBooking(userId: number, roomId: number) {
-  if (!roomId) throw notFoundError();
-
   const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
 
   if (!enrollment) throw notFoundError();
